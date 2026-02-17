@@ -1,6 +1,6 @@
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PORT
-import voluptuous as vol
 
 class OpenDTUConfigFlow(config_entries.ConfigFlow):
     VERSION = 1
@@ -18,7 +18,7 @@ class OpenDTUConfigFlow(config_entries.ConfigFlow):
         )
 
     def _get_schema(self):
-        return {
+        return vol.Schema({
             vol.Required(CONF_HOST): str,
             vol.Required(CONF_PORT, default=80): int
-        }
+        })
