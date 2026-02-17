@@ -1,19 +1,24 @@
-import voluptuous as vol
 from homeassistant import config_entries
-from .const import DOMAIN, CONF_HOST, CONF_PORT
+from homeassistant.const import CONF_HOST, CONF_PORT
+import voluptuous as vol
 
-class OpenDTUFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
+class OpenDTUConfigFlow(config_entries.ConfigFlow):
+    VERSION = 1
 
     async def async_step_user(self, user_input=None):
-        if user_input:
+        if user_input is not None:
             return self.async_create_entry(
-                title=f"OpenDTU ({user_input[CONF_HOST]})",
-                data=user_input,
+                title=user_input[CONF_HOST],
+                data=user_input
             )
 
-        schema = vol.Schema({
-            vol.Required(CONF_HOST): str,
-            vol.Required(CONF_PORT, default=80): int,
-        })
+        return self.async_show_form(
+            step_id="user",
+            data_schema=self._get_schema()
+        )
 
-        return self.async_show_form(step_id="user", data_schema=schema)
+    def _get_schema(self):
+        return {
+            vol.Required(CONF_HOST): str,
+            vol.Required(CONF_PORT, default=80): int
+        }
