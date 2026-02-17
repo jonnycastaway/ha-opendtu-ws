@@ -16,7 +16,7 @@ class OpenDTUCoordinator(DataUpdateCoordinator):
         return self.data
 
     async def start(self):
-        uri = f"ws://{self.host}:{self.port}/ws"
+        uri = f"ws://{self.host}:{self.port}/livedata"
 
         while True:
             try:
