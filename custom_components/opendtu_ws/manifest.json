@@ -1,8 +1,0 @@
-{
-  "domain": "opendtu_ws",
-  "name": "OpenDTU WebSocket",
-  "version": "3.2.2",
-  "config_flow": true,
-  "requirements": ["websockets>=11.0"],
-  "codeowners": []
-}
