@@ -2,7 +2,12 @@
   "domain": "opendtu_ws",
   "name": "OpenDTU WebSocket",
   "version": "1.0.1",
+  "documentation": "https://github.com/jonnycastaway/ha-opendtu-ws",
+  "issue_tracker": "https://github.com/jonnycastaway/ha-opendtu-ws/issues",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@jonnycastaway"],
   "config_flow": true,
-  "requirements": ["websockets>=11.0"],
-  "codeowners": []
+  "iot_class": "local_push",
+  "integration_type": "device"
 }
