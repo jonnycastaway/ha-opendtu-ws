@@ -10,9 +10,11 @@ async def async_setup_entry(hass, entry):
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
-    # WebSocket im Hintergrund starten und Task speichern für sauberes Stoppen
-    task = hass.async_create_task(coordinator.start())
-    coordinator._ws_task = task  # FIX: Task-Referenz speichern
+    # WebSocket im Hintergrund starten – asyncio.ensure_future() verhindert
+    # dass HA den Task beim Bootstrap trackt und in einen Timeout läuft
+    import asyncio
+    task = asyncio.ensure_future(coordinator.start())
+    coordinator._ws_task = task
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
