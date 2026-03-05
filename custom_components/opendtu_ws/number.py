@@ -1,5 +1,4 @@
 import aiohttp
-import json
 import logging
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -15,17 +14,12 @@ _LOGGER = logging.getLogger(__name__)
 #   1 = relativ,  persistent       (permanent, bleibt nach WR-Neustart erhalten)
 #   2 = absolut,  nicht-persistent (temporär, wird bei WR-Neustart zurückgesetzt)
 #   3 = absolut,  persistent       (permanent, bleibt nach WR-Neustart erhalten)
+# limit_type gemäß OpenDTU API (verifiziert):
+#   0 = Watt,  temporär
+#   1 = %,     temporär
+#   2 = Watt,  permanent
+#   3 = %,     permanent
 LIMIT_CONFIGS = [
-    {
-        "suffix":     "limit_relative_persistent",
-        "source_key": "limit_relative",
-        "name":       "Limit relativ (permanent)",
-        "unit":       "%",
-        "min":        2,
-        "max":        100,
-        "step":       1,
-        "limit_type": 1,
-    },
     {
         "suffix":     "limit_relative_temporary",
         "source_key": "limit_relative",
@@ -34,15 +28,15 @@ LIMIT_CONFIGS = [
         "min":        2,
         "max":        100,
         "step":       1,
-        "limit_type": 0,
+        "limit_type": 1,
     },
     {
-        "suffix":     "limit_absolute_persistent",
-        "source_key": "limit_absolute",
-        "name":       "Limit absolut (permanent)",
-        "unit":       "W",
-        "min":        0,
-        "max":        99999,
+        "suffix":     "limit_relative_persistent",
+        "source_key": "limit_relative",
+        "name":       "Limit relativ (permanent)",
+        "unit":       "%",
+        "min":        2,
+        "max":        100,
         "step":       1,
         "limit_type": 3,
     },
@@ -50,6 +44,16 @@ LIMIT_CONFIGS = [
         "suffix":     "limit_absolute_temporary",
         "source_key": "limit_absolute",
         "name":       "Limit absolut (temporär)",
+        "unit":       "W",
+        "min":        0,
+        "max":        99999,
+        "step":       1,
+        "limit_type": 0,
+    },
+    {
+        "suffix":     "limit_absolute_persistent",
+        "source_key": "limit_absolute",
+        "name":       "Limit absolut (permanent)",
         "unit":       "W",
         "min":        0,
         "max":        99999,
@@ -125,17 +129,24 @@ class OpenDTULimitNumber(CoordinatorEntity, NumberEntity):
             "limit_type": self._config["limit_type"],
             "limit_value": int(value),
         }
+        _LOGGER.debug(
+            "Sende Limit-Request: URL=%s | Payload=%s | limit_type=%s",
+            url, payload, self._config["limit_type"]
+        )
         try:
             async with aiohttp.ClientSession() as session:
                 auth = aiohttp.BasicAuth(self._username, self._password)
+                import json as _json
+                form = aiohttp.FormData()
+                form.add_field("data", _json.dumps(payload))
                 async with session.post(
                     url,
-                    data=f"data={json.dumps(payload)}",
-                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                    data=form,
                     auth=auth,
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as resp:
                     result = await resp.json()
+                    _LOGGER.debug("Limit-Response: %s", result)
                     if result.get("type") == "success":
                         _LOGGER.info(
                             "Limit gesetzt (%s, type=%s): %s %s",
