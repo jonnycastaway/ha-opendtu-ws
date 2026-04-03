@@ -110,7 +110,7 @@ class OpenDTULimitNumber(CoordinatorEntity, NumberEntity):
         self._password = entry.data.get(CONF_PASSWORD, "")
         self._source_key = f"inverter_{serial}_{config['source_key']}"
 
-        self._attr_unique_id = f"opendtu_{serial}_{config['suffix']}"
+        self._attr_unique_id = f"{entry.entry_id}_{serial}_{config['suffix']}"
         self._attr_name = config["name"]
         self._attr_native_unit_of_measurement = config["unit"]
         self._attr_native_min_value = config["min"]
